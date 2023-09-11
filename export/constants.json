@@ -1,0 +1,5 @@
+{
+ "exportSetName": "EXPORT_SET",
+ "duplicateObjectName": "PLACEHOLDER",
+ "defaultArgList": "-stripNamespaces -uvWrite -writeFaceSets -writeVisibility -autoSubd -writeUVSets -wholeFrameGeo -worldSpace -dataFormat ogawa"
+}
