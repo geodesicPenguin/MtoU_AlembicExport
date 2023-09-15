@@ -40,3 +40,16 @@ def createSelectionSet():
 def run():
     userSelection()
     createSelectionSet()
+    
+
+def exportSetOptionBox():
+    newExportSetName = cmds.promptDialog(
+        title='New Export Set Keyword',
+        message='Export Set Name:',
+        defaultButton='OK',
+        cancelButton='Cancel'
+    )
+    
+    global EXPORT_SET_NAME
+    EXPORT_SET_NAME = constants.setConstant(newValue=newExportSetName)
+

@@ -6,9 +6,8 @@ import unreal as ue
 import os 
 
 class AlembicImportTask():
-    def __init__(self, files=[], importFolder='/Game/Sequencer'):
+    def __init__(self):
         self.tasks = {}
-        self.setTaskQueue(files, importFolder)
 
     def fileCheck(self, files):
         fileCheck = {file : os.path.exists(file) for file in files}
@@ -119,6 +118,14 @@ class AlembicImportTask():
         taskQueue = list(self.tasks.values())
         print('',f'TASK COUNT: {len(taskQueue)}','', 'ASSETS:',  *taskNames, sep='\n')
         ue.AssetToolsHelpers.get_asset_tools().import_asset_tasks(taskQueue)
+        
+        
+    @classmethod
+    def runImports(cls, files, importFolder='/Game/Sequencer'):
+        importer = cls()
+        importer.setTaskQueue(files, importFolder)
+        
+        return importer
         
     
         

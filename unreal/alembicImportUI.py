@@ -1,6 +1,6 @@
 #alembicImportUI.py
 
-from assetImports import alembicImport
+from animImport import alembicImport
 
 import unreal as ue
 import sys
@@ -180,7 +180,7 @@ class AlembicImportUI(QWidget):
             
             
     def setAlembicImportTask(self):
-        self.alembicTask = alembicImport.AlembicImportTask()
+        self.alembicTask = alembicImport.AlembicImportTask.runImports()
 
 
     def alembicImport(self,file):
