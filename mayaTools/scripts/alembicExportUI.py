@@ -17,29 +17,27 @@ from maya import cmds
 from maya import OpenMayaUI as omui
 
 
-try:
-    import alembicSingleExport
-    import alembicMultiExport
-    import constants
-except:
-    from export import alembicSingleExport
-    from export import alembicMultiExport
-    from export import constants
+import alembicSingleExport
+import alembicMultiExport
+import constants
+
 
 from PySide2.QtWidgets import *
 from PySide2.QtCore import *
 from PySide2.QtGui import *
 from shiboken2 import wrapInstance
 
-MAYA_POINTER_ADDRESS = int(omui.MQtUtil.mainWindow())
-MAYA_MAIN_WINDOW = wrapInstance(MAYA_POINTER_ADDRESS, QWidget)
-UI_SETTINGS = ('Maya', 'AlembicExportUISettings')
+
 
 class AlembicExportUI(QWidget):
     def __init__(self) -> None:
         super(AlembicExportUI, self).__init__()
+        
+        mayaPointerAddress = int(omui.MQtUtil.mainWindow())
+        mayaMainWindow = wrapInstance(mayaPointerAddress, QWidget)
+        self.UI_SETTINGS = ('Maya', 'AlembicExportUISettings')
 
-        self.setParent(MAYA_MAIN_WINDOW)
+        self.setParent(mayaMainWindow)
         self.setWindowFlags(Qt.Window)
 
         # Window settings
@@ -51,7 +49,7 @@ class AlembicExportUI(QWidget):
         self.loadSettings()
         
         windowSizeAndPosition = QRect(50, 50, 500, 200)
-        windowSizeAndPosition.moveCenter(MAYA_MAIN_WINDOW.geometry().center())
+        windowSizeAndPosition.moveCenter(mayaMainWindow.geometry().center())
         self.setGeometry(windowSizeAndPosition)
         
         
@@ -75,14 +73,14 @@ class AlembicExportUI(QWidget):
         
     
     def saveSettings(self):
-        settings = QSettings(*UI_SETTINGS)
+        settings = QSettings(*self.UI_SETTINGS)
         
         settings.setValue('combinedFileCheckbox', self.combined_chk.isChecked())
         settings.setValue('exportLocation', self.outputDir_txt.text())
         
         
     def loadSettings(self):
-        settings = QSettings(*UI_SETTINGS)
+        settings = QSettings(*self.UI_SETTINGS)
         
         combinedCheckboxValue = settings.value('combinedFileCheckbox', True)
         
