@@ -377,7 +377,6 @@ class AlembicExportUI(QWidget):
         fileFilter = 'All Files(*)'
         lastDirectory = self.outputDir_txt.text()
         startingDirectory = lastDirectory if lastDirectory != '' else self.exportDir
-        print(startingDirectory,end='\n\n\THIS IS IT')
         selection = cmds.fileDialog2(
             fileFilter = fileFilter,
             dialogStyle = 2,

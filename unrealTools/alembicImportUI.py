@@ -1,17 +1,31 @@
 #alembicImportUI.py
 
-import alembicImport
 
 import unreal as ue
 import sys
 import os
 
+moduleDir = os.path.dirname(__file__)
+
+try:
+    import alembicImport
+except:
+    if moduleDir not in sys.path:
+        sys.path.append(moduleDir)
+        import alembicImport
 try:
     from PySide2.QtWidgets import *
     from PySide2.QtCore import *
     from PySide2.QtGui import *
 except:
-    raise ModuleNotFoundError('The needed UI module was not found.')
+    if moduleDir not in sys.path:
+        pysidePath = os.path.join(moduleDir, 'PySide2')
+        sys.path.append(pysidePath)
+        from PySide2.QtWidgets import *
+        from PySide2.QtCore import *
+        from PySide2.QtGui import *
+        
+
 
 class AlembicImportUI(QWidget):
     def __init__(self) -> None:
