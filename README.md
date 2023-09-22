@@ -15,6 +15,15 @@ This tool uses ALEMBIC CACHES as the file type of choice. This is because alembi
 * Maya UI for exporting one or multiple export locations
 * Unreal UI with a simple drag-n-drop window to batch import animation
 
-  ## Installation
+## Installation
 
-  1. Download 
+1. Download and unzip the MtoU_AlembicExport file from [github releases](google.com).
+
+MAYA
+2. Drag and drop the DRAG-N_DROP-IN-MAYA.py into Maya's viewport. You'll see the menu appear on the top bar of the Maya window. (Requires Maya restart to work)
+
+UNREAL
+3. Enable Python in your Unreal project. Find out how to do that [here](https://www.youtube.com/watch?v=PMOvQ7mPv8k&list=PLBLmKCAjA25Br8cOVzUroqi_Nwipg-IdP&index=2).
+4. Copy the unrealTools folder into the project's Script folder. (Just go to where your .uproject file is saved, there should be a Script folder right next to it)
+5. In Unreal on the top bar, go to Tools > Execute Python Script. Browse for the alembicImportUI.py file. The UI will load and you can use Tools > Recent Python Scripts from now on to load the tool quicker.
+
