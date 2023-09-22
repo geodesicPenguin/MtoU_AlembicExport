@@ -17,7 +17,7 @@ This tool uses ALEMBIC CACHES as the file type of choice. This is because alembi
 
 ## Installation
 
-1. Download and unzip the MtoU_AlembicExport file from [github releases](google.com).
+1. Download and unzip the MtoU_AlembicExport file from [github releases](https://github.com/geodesicPenguin/MtoU_AlembicExport/releases).
 
 MAYA:
 
