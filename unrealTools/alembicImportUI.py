@@ -383,3 +383,8 @@ QPushButton:pressed {
     background-color: #707070;
 }
 """)
+
+
+if __name__ == '__main__':
+    window = AlembicImportUI()
+    window.show()
