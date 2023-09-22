@@ -1,28 +1,33 @@
 #alembicImport.py
 
-# crashes if the asset path has too many / ie: Game//Sequencer
-
 import unreal as ue
 import os 
 
 class AlembicImportTask():
     def __init__(self):
-        self.tasks = {}
-
-    def fileCheck(self, files):
-        fileCheck = {file : os.path.exists(file) for file in files}
-        # make it so whatveer files dont excist, 
-        # ask the user if they want to remove it from the file list
-        # also mmake this a conveniece function somewhere else. Not this file
+        self.queuedTasks = {}
             
     
     
-    def setTaskQueue(self, files, importFolder=None):
-        if not isinstance(files, list): files = [files]
+    def setTaskQueue(self, files, importFolder=None, importType = ue.AlembicImportType.SKELETAL, scale = [1,1,1], rotate = [-90,0,0]):
+        """Adds to the queue for all the task objects needed for each file being imported.
+
+        Args:
+            files : The filepaths for the desired imported files
+            importFolder : The UE folder to import the files to.
+            importType : Defaults to ue.AlembicImportType.SKELETAL, future versions will have geometry cache and static mesh.
+            scale : The scale of the imported objects.
+            rotate : The rotation of the imported objects.
+
+        Returns:
+            self.queuedTasks: The list of all the tasks added.
+        """
+        if not isinstance(files, list): files = [files] # If importing one file, we make a list out of it to coincide with the following code.
+        
         for file in files:
-            assetName = os.path.splitext(os.path.split(file)[1])[0]
+            assetName = os.path.splitext(os.path.basename(file))[0]
             if importFolder is None:
-                importFolder = '/Game/Sequencer'
+                importFolder = '/Game/'
                 assetPath = self.setAssetPath(importFolder, assetName)
             else:
                 assetPath = importFolder
@@ -38,34 +43,48 @@ class AlembicImportTask():
             }
             
             task.set_editor_properties(properties)
-            task.options = self.setOptions()
+            task.options = self.setOptions(importType, scale, rotate)
         
-            self.tasks[assetName] = task
-
-            
-        return list(self.tasks.values())
+            self.queuedTasks[assetName] = task
+        
+        return self.queuedTasks
     
     
     def getTaskQueue(self):
-        return self.tasks
+        return self.queuedTasks
     
     
-    def setAssetPath(self, assetDirectory, assetName): # make this to be like what Jack gave
+    def setAssetPath(self, assetDirectory, assetName): # make this generic for anyone to edit
+        """Creates a formatted directory where the asset will be imported.
+
+        Args:
+            assetDirectory : The directory to import to.
+            assetName : The name of the imported asset.
+
+        Returns:
+            assetPath : The resulting joined directory of the directory and asset name.
+        """
         assetPath = f'{assetDirectory}/{assetName}'
         if '/Game/' not in assetPath:
             assetPath = f'/Game/{assetPath}'
-        return assetPath
+            
+        formattedAssetPath = os.path.normpath(assetPath)
+        
+        return formattedAssetPath
     
     
-    def setOptions(self):
+    def setOptions(self, importType, scale, rotate):
         """The options for the import tasks. 
         This is a convenience function. 
         All tasks added per class instance will recieve these import options.
+        
+        Returns:
+            options : The import settings object.
         """
         options = ue.AbcImportSettings()
         
-        options.set_editor_property('import_type', ue.AlembicImportType.SKELETAL)
-        options.conversion_settings = self.setConversionSettings()
+        options.set_editor_property('import_type', importType)
+        options.conversion_settings = self.setConversionSettings(scale, rotate)
         options.material_settings = self.setMaterialSettings()
         
         return options
@@ -104,26 +123,59 @@ class AlembicImportTask():
         
         return materialSettings
     
-    def setConversionSettings(self):
-        conversionSettings = ue.AbcConversionSettins()
+    
+    def setConversionSettings(self, scale = [1,1,1], rotate = [-90,0,0]): 
+        """The settings for the transforms.
+        
+        Args:
+            scale : A list of the three axes (x,y,z) that affect the scale.
+            rotate : A list of the three axes (x,y,z) that affect the rotation.
 
-        #scaleSettings = ('scale', ue.Vector(x=1,y=-1,z=1))
-        rotationSettings = ('rotation', ue.Vector(x=-90,y=0,z=0))
+        Returns:
+            conversionSettings : The settings object for the transforms.
+        """
+        conversionSettings = ue.AbcConversionSettings()
+
+        axes = ['x', 'y', 'z']
+        
+        scaleVector = dict(zip(axes, scale))
+        scaleSettings = ('scale', ue.Vector(**scaleVector))
+        conversionSettings.set_editor_property(*scaleSettings)
+                
+        rotationVector = dict(zip(axes, rotate))
+        rotationSettings = ('rotation', ue.Vector(**rotationVector))
         conversionSettings.set_editor_property(*rotationSettings)
+        
+        return conversionSettings
     
     
     def runTasks(self):
-        print(self.tasks,sep='\n')
-        taskNames = list(self.tasks.keys())
-        taskQueue = list(self.tasks.values())
-        print('',f'TASK COUNT: {len(taskQueue)}','', 'ASSETS:',  *taskNames, sep='\n')
+        """Runs the tasks found within the task queue.
+        """
+        taskNames = list(self.queuedTasks.keys())
+        taskQueue = list(self.queuedTasks.values())
+        print('#'*10, f'TASK COUNT: {len(taskQueue)}','', 'ASSETS:',  *taskNames, '#'*10, sep='\n')
+        
         ue.AssetToolsHelpers.get_asset_tools().import_asset_tasks(taskQueue)
         
         
     @classmethod
-    def runImports(cls, files, importFolder='/Game/Sequencer'):
+    def runImports(cls, files, importFolder=None, importType = ue.AlembicImportType.SKELETAL, scale = [1,1,1], rotate = [-90,0,0]):
+        """Convenience function to set queue and import files in one function.
+
+        Args:
+            files : The filepaths for the desired imported files
+            importFolder : The UE folder to import the files to.
+            importType : Defaults to ue.AlembicImportType.SKELETAL, future versions will have geometry cache and static mesh.
+            scale : The scale of the imported objects.
+            rotate : The rotation of the imported objects.
+
+        Returns:
+            importer : The AlembicImportTask object.
+        """
         importer = cls()
         importer.setTaskQueue(files, importFolder)
+        importer.runTasks()
         
         return importer
         

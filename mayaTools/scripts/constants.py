@@ -1,4 +1,4 @@
-#editConstants.py
+#constants.py
 
 """
 To edit and query from constants.json
@@ -19,7 +19,9 @@ CONSTANTS_FILE = os.path.join(fileDir, 'constants.json')
 CONSTANTS = ['exportSetName', 'duplicateObjectName', 'defaultArgList']
 
 # Do not edit these.
-DEFAULT_VALUES = ['EXPORT_SET', 'PLACEHOLDER', '-stripNamespaces -uvWrite -writeFaceSets -writeVisibility -autoSubd -writeUVSets -wholeFrameGeo -worldSpace -dataFormat ogawa']
+DEFAULT_VALUES = ['EXPORT_SET', 
+                  'PLACEHOLDER', 
+                  '-stripNamespaces -uvWrite -writeFaceSets -writeVisibility -autoSubd -writeUVSets -wholeFrameGeo -worldSpace -dataFormat ogawa']
         
 
 def defaultConstants():

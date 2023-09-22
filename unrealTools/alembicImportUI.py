@@ -1,6 +1,6 @@
 #alembicImportUI.py
 
-from animImport import alembicImport
+import alembicImport
 
 import unreal as ue
 import sys
@@ -11,30 +11,33 @@ try:
     from PySide2.QtCore import *
     from PySide2.QtGui import *
 except:
-    raise Exception('The needed UI module was not found.')
+    raise ModuleNotFoundError('The needed UI module was not found.')
 
 class AlembicImportUI(QWidget):
     def __init__(self) -> None:
         super(AlembicImportUI, self).__init__()
         
+        self.UI_SETTINGS = ('Unreal', 'AlembicImportUISettings')
+        
         self.setWindowFlags(Qt.Window)
-        self.setWindowTitle('Batch Shot Importer')
+        self.setWindowTitle('Alembic Importer')
         self.setFixedSize(350, 800)
         self.setAcceptDrops(True) 
     
         self.uiWindow()
     
-    
+        self.loadSettings()
+        
+        
     def uiWindow(self):
-        self.createMainWidget()
-        
-        
-    def createMainWidget(self):
+        """Creates the contents of the window.
+        """
         # main layout
         mainWidget = QGroupBox(self)
         mainLayout = QVBoxLayout(mainWidget)
         mainLayout.setContentsMargins(30,30,30,30)
         mainLayout.setSpacing(20)
+        
         
         # browse button
         browseButton = QPushButton('Browse')
@@ -42,52 +45,154 @@ class AlembicImportUI(QWidget):
         browseButton.setFixedSize(500,30)
         mainLayout.addWidget(browseButton)
         
+        
         # file list 
         fileList = self.createFileListWidget()
         mainLayout.addWidget(fileList)
         
-        # asset location (TBD if location is editable)
-        assetLocationBox = QGroupBox('Asset Location Template:')
+        
+        # asset location
+        assetLocationBox = QGroupBox('Import Location:')
         assetLocationBox.setStyleSheet('QLabel {color: grey;}')
         mainLayout.addWidget(assetLocationBox)
         assetLocationLayout = QVBoxLayout(assetLocationBox)
         assetLocationLayout.setContentsMargins(15,15,15,15)
         
-        assetLocationLabel = QLabel('/Game/Sequencer/S01/S01.abc')
-        assetLocationLayout.addWidget(assetLocationLabel)
+        
+        currentFolder = self.currentContentBrwoserFolder()
+        self.assetLocationText = QLineEdit(currentFolder)
+        self.assetLocationText.setToolTip('Defaults to the currently active folder in the content browser.')
+        assetLocationLayout.addWidget(self.assetLocationText)
+        
+        
+        # transforms
+        transformsBox = QGroupBox('Transforms:')
+        transformsBox.setStyleSheet('QGroupBox {background-color: #4a4a4a;}')
+        transformsBox.setToolTip('Set the scale and rotate settings.\nThe axes are as follows: X Y Z')
+        mainLayout.addWidget(transformsBox)
+        transformsLayout = QGridLayout(transformsBox)
+        transformsLayout.setContentsMargins(30,30,30,30)
+        
+        scaleLabel = QLabel ('Scale:')
+        
+        self.scaleX = QDoubleSpinBox()
+        self.scaleY = QDoubleSpinBox()
+        self.scaleZ = QDoubleSpinBox()
+        
+        self.scaleX.setValue(1); self.scaleX.setMinimum(-100); self.scaleX.setMaximum(100)
+        self.scaleY.setValue(1); self.scaleY.setMinimum(-100); self.scaleX.setMaximum(100)
+        self.scaleZ.setValue(1); self.scaleZ.setMinimum(-100); self.scaleX.setMaximum(100)
+        
+        for i,wgt in enumerate([scaleLabel, self.scaleX, self.scaleY, self.scaleZ]):
+            transformsLayout.addWidget(wgt, 0, i)
+            
+        rotateLabel = QLabel('Rotate:')
+        
+        self.rotateX = QDoubleSpinBox()
+        self.rotateY = QDoubleSpinBox()
+        self.rotateZ = QDoubleSpinBox()
+        
+        self.rotateX.setMinimum(-360); self.rotateX.setMaximum(360)
+        self.rotateY.setMinimum(-360); self.rotateX.setMaximum(360)
+        self.rotateZ.setMinimum(-360); self.rotateX.setMaximum(360)
+        
+        for i,wgt in enumerate([rotateLabel, self.rotateX, self.rotateY, self.rotateZ]):
+            transformsLayout.addWidget(wgt, 1, i)
+            
+        
+        # import type (For static meshes and geometry caches in the future)
+        '''
+        importTypeBox = QGroupBox('Import Type')
+        mainLayout.addWidget(importTypeBox)
+        importTypeLayout = QHBoxLayout(importTypeBox)
+        importTypeComboBox = QComboBox()
+        importTypeBox.setContentsMargins(15,15,15,15)
+        importTypeComboBox.setStyleSheet('QComboBox {background-color: #4a4a4a;}')
+        importTypeLayout.addWidget(importTypeComboBox)
+        importTypeComboBox.addItems(['Static Mesh', 'Geometry Cache', 'Skeletal'])
+        '''
+        
         
         # import abcs
         importButton = QPushButton('Import')
-        importButton.clicked.connect(self.runImports)
+        importButton.clicked.connect(self.runTaskQueue)
         mainLayout.addWidget(importButton)
-        
-        
         
     
     def createFileListWidget(self):
-        dragNdropBox = QGroupBox('Browse or drag Alembic and FBX files into the list:')
+        """Creates the File List Widget.
+
+        Returns:
+            dragNdropBox : The widget with all the file list contents.
+        """
+        dragNdropBox = QGroupBox('Browse or drag Alembic files into the list:')
         dragNdropLayout = QVBoxLayout(dragNdropBox)
         dragNdropLayout.setContentsMargins(20,20,20,20)
         self.fileListWidget = QListWidget()
-        self.fileListWidget.setFixedSize(250,500)
+        self.fileListWidget.setFixedSize(250,300)
         self.fileListWidget.setStyleSheet('background-color: #202020;')
         dragNdropLayout.addWidget(self.fileListWidget)
         
         return dragNdropBox
+    
+    
+    def saveSettings(self):
+        """Saves the UI settings for next use.
+        """
+        settings = QSettings(*self.UI_SETTINGS)
         
+        # transform (conversion) settings
+        scale = [s.value() for s in [self.scaleX, self.scaleY, self.scaleZ]]
+        rotate = [r.value() for r in [self.rotateX, self.rotateY, self.rotateZ]]
+        settings.setValue('conversionSettings', (scale, rotate))
+        
+        # perhaps add in last browsed folder as a setting
+    
+    
+    def loadSettings(self):
+        """Loads the UI settings into the window.
+        """
+        settings = QSettings(*self.UI_SETTINGS)
+        
+        scaleSettings, rotateSettings = settings.value('conversionSettings', ([1,1,1], [-90,0,0]))
+        
+        self.scaleX.setValue(scaleSettings[0])
+        self.scaleY.setValue(scaleSettings[1])
+        self.scaleZ.setValue(scaleSettings[2])
+        
+        self.rotateX.setValue(rotateSettings[0])
+        self.rotateY.setValue(rotateSettings[1])
+        self.rotateZ.setValue(rotateSettings[2])
+
+        
+    def closeEvent(self, event):
+        """Sends the signal to save the settings before closing the window.
+        """
+        self.saveSettings()
+        event.accept()
+    
         
     def dragEnterEvent(self, event):
+        """Functionality for the File List Widget to recieve files by dragging them in. 
+        """
         if event.mimeData().hasUrls():
             event.accept()
             
             
     def dropEvent(self, event):
+        """Functionality for the File List Widget to update with the dropped files.
+        """
         urls = event.mimeData().urls()
         if urls:
             self.dragNdropListUpdate(urls)
     
     
     def dragNdropListUpdate(self, urls):
+        """Updates the list with the files.
+
+        Args:
+            urls : The filepaths of the incoming files.
+        """
         filesDict = {}
         if urls:
             for url in urls:
@@ -111,15 +216,24 @@ class AlembicImportUI(QWidget):
                 
                 
     def fileChecker(self, filepath):
+        """Checks files for the Alembic extension.
+        True if Alembic, False if not.
+
+        Args:
+            filepath : the filepath
+        """
         ext = os.path.splitext(filepath)[-1]
-        print(ext)
-        if ext != '.fbx' and ext != '.abc':
-            ue.log(f'Given file: {filepath} incorrect file type. (.fbx or .abc only)')    
+        if ext != '.abc':
+            ue.log(f'{filepath} is an incorrect file type. Alembic files only.')    
+            
             return False
+        
         return True           
 
                 
     def browseListUpdate(self):
+        """Updates the File List Widget after browsing for new items.
+        """
         filesDict = {}
         filepaths = self.browseDialog()
         print(filepaths)
@@ -138,61 +252,76 @@ class AlembicImportUI(QWidget):
         
     
     def browseDialog(self): 
+        """The file browser.
+        """
         title = 'Select Animation Files for Import'
-        fileFilter = 'Animation Files (*.fbx, *.abc)'
+        fileFilter = 'Animation Files (*.abc)'
         startingDirectory = ue.Paths.get_project_file_path()
         selection = QFileDialog.getOpenFileNames(self,
                                                 title,
                                                 startingDirectory,
                                                 fileFilter)[0]
+        
         return selection
 
-    def runImports(self):
-
-        files = self.getFiles()
         
-        self.setAlembicImportTask()
-        self.setFbxImportTask()
-        for file in files:
-            if '.abc' in file:
-                self.alembicImport(file)
-            if '.fbx' in file:
-                print('FBX import not supported yet')
-                
-        self.alembicTask.runTasks()
-        #self.fbxTask.runTasks()
-
+    def currentContentBrwoserFolder(self):
+        """Returns the current content browser folder.
+        """
+        currentFolder = ue.EditorUtilityLibrary.get_current_content_browser_path()
         
+        return currentFolder
+    
         
-    def importLocation(self, file):
-        fixedLocation = '/Game/Sequencer'
-        shot = os.path.split(file)[-1].split('_')[0]
-        if 'S' not in shot:
-            raise Exception(f'{file} does NOT have the correct naming convention. IE: S03_V001_Mark.abc')
-        importFolder = fixedLocation+'/'+shot
+    def getImportLocation(self):
+        """Looks at the import location text box for where to import to.
+        """
+        importFolder = self.assetLocationText.text()
+        if importFolder == '':
+            raise ValueError('No import folder given.')
 
         return importFolder 
         
         
     def getFiles(self):
+        """Looks at the File List Widget for all the given files.
+        """
         listItems = [self.fileListWidget.item(x).data(Qt.UserRole+1) for x in range(self.fileListWidget.count())]
+        
         return listItems
+    
+    
+    def getScale(self):
+        """Gets the user-specified scale values.
+        """
+        scale = [s.value() for s in [self.scaleX, self.scaleY, self.scaleZ]]
+        
+        return scale
+    
+    
+    def getRotate(self):
+        """Gets the user-specified rotation values.
+        """
+        rotate = [r.value() for r in [self.rotateX, self.rotateY, self.rotateZ]]
+        
+        return rotate
             
-            
-    def setAlembicImportTask(self):
-        self.alembicTask = alembicImport.AlembicImportTask.runImports()
 
-
-    def alembicImport(self,file):
-        importFolder = self.importLocation(file)
-        self.alembicTask.setTaskQueue(file, importFolder)
-
-
-    def setFbxImportTask(self):
-        pass
+    def runTaskQueue(self):
+        """Creates the import task queue, adds the user-given data and imports.
+        """
+        files = self.getFiles()
+        importFolder = self.getImportLocation()
+        scale = self.getScale()
+        rotate = self.getRotate()
         
-        
-        
+        alembicImport.AlembicImportTask.runImports(files=files, 
+                                                   importFolder=importFolder, 
+                                                   scale=scale, 
+                                                   rotate=rotate)
+
+
+
     
 app = None
 if not QApplication.instance():

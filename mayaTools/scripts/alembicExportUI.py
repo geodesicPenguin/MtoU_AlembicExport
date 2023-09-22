@@ -58,6 +58,8 @@ class AlembicExportUI(QWidget):
         
         
     def mainUI(self):
+        """Creates the master layout and adds the widgets.
+        """
         master_lyt = QVBoxLayout(self)
         
         master_lyt.addWidget(self.menuBar())
@@ -73,6 +75,8 @@ class AlembicExportUI(QWidget):
         
     
     def saveSettings(self):
+        """Saves the UI preferences for the next time the window is opened. 
+        """
         settings = QSettings(*self.UI_SETTINGS)
         
         settings.setValue('combinedFileCheckbox', self.combined_chk.isChecked())
@@ -80,6 +84,8 @@ class AlembicExportUI(QWidget):
         
         
     def loadSettings(self):
+        """Loads the UI preferences.
+        """
         settings = QSettings(*self.UI_SETTINGS)
         
         combinedCheckboxValue = settings.value('combinedFileCheckbox', True)
@@ -103,11 +109,16 @@ class AlembicExportUI(QWidget):
         
         
     def closeEvent(self, event):
+        """Activates when the window is closed. 
+        When the window closes, the UI settings are saved.
+        """
         self.saveSettings()
         event.accept()
         
         
     def menuBar(self):
+        """Returns the menu bar widget.
+        """
         main_mnb = QMenuBar()
         
         settings_mnu = main_mnb.addMenu('&Settings')
@@ -124,6 +135,8 @@ class AlembicExportUI(QWidget):
         
             
     def fileOutputOptionsUI(self):
+        """Returns the upper widget, which asks the user wether to export a single or multiple files.
+        """
         self.fileOutputOptions_wgt = QGroupBox(self)
         
         fileOutput_lyt = QGridLayout(self.fileOutputOptions_wgt)
@@ -151,6 +164,8 @@ class AlembicExportUI(QWidget):
     
     
     def toggleFileOutput(self, state):
+        """Toggles what is enabled depending on the selected output file checkbox.
+        """
         if state == 2:
             if self.sender() == self.combined_chk:
                 self.separate_chk.setChecked(False)
@@ -165,6 +180,8 @@ class AlembicExportUI(QWidget):
                 
             
     def exportOptionsUI(self):
+        """Returns the lower widget, which asks the user for the multi-file export names/dir.
+        """
         self.exportOptions_wgt = QFrame()
         self.exportOptions_wgt.setFrameStyle(QFrame.Box|QFrame.Sunken)
         
@@ -241,6 +258,8 @@ class AlembicExportUI(QWidget):
     
     
     def toggleExport(self, state):
+        """Toggles the child widgets of the multi export widget.
+        """
         toggledCheckbox = self.sender()
         
         exportRow_wgt = toggledCheckbox.parentWidget()
@@ -256,6 +275,8 @@ class AlembicExportUI(QWidget):
     
     
     def confirmOptionsUI(self):
+        """Returns the lowest widget, 2 buttons that execute the tool.
+        """
         confirm_wgt = QGroupBox(self)
         
         confirm_lyt = QHBoxLayout(confirm_wgt)
@@ -272,6 +293,8 @@ class AlembicExportUI(QWidget):
             
             
     def showWindow(self):
+        """Shows the window.
+        """
         self.show()
         
         return self
@@ -279,11 +302,19 @@ class AlembicExportUI(QWidget):
         
         
     def editExportSetName(self, newValue = 'EXPORT_SET'):
+        """The export set name is saved in the constants.json file.
+        This function edits the json file and updates the constant variables within the respective export modules.
+        """
         constants.setConstant('exportSetName', newValue) # Changes variable in constant.json for future use
-        alembicMultiExport.EXPORT_SET_NAME = newValue # Updates the current session to look for this new name
-        self.close() # closes window, since window will need a refresh to populate with new found sets. 
+        alembicMultiExport.EXPORT_SET_NAME = newValue # Updates the current session to look for this new name in the Multi exporter
+        alembicSingleExport.EXPORT_SET_NAME = newValue # Updates the current session to look for this new name Single exporter
+        self.close() # closes window, since window will need a refresh to populate with new found sets
+    
     
     def exportSetDialog(self):
+        """A dialog to edit the export set name.
+        Returns the user given name.
+        """
         newExportSetName, confirm = QInputDialog.getText(self,
                                                          'New Export Set Keyword',
                                                          'Window must be re-opened to reflect change.\n'
@@ -296,18 +327,24 @@ class AlembicExportUI(QWidget):
     
     
     def findExportSets(self):
+        """Returns the unique export sets for the multi export.
+        """
         self.exportSelectionSets = alembicMultiExport.MultiExport.findExportSets()
         
         return self.exportSelectionSets
     
     
     def outputSeparateFilename(self, exportSet):
+        """Returns the name of the unique export set with the alembic file extension.
+        """
         namespace = exportSet.split(':')[0]
         name = namespace+'.abc'
         return name
     
     
     def outputCombinedFilename(self):
+        """Returns the name of the scene with the alembic file extension.
+        """
         sceneName = cmds.file(q=1, sceneName=1, shortName=1)
         if sceneName == '':
             sceneName = 'untitled'
@@ -317,6 +354,8 @@ class AlembicExportUI(QWidget):
     
     
     def outputSingleLocation(self):
+        """A dialog to search for the single export directory.
+        """
         fileFilter = 'Alembic (*.abc);; All Files(*)'
         startingDirectory = self.exportDir
         selection = cmds.fileDialog2(
@@ -333,6 +372,8 @@ class AlembicExportUI(QWidget):
         
         
     def outputMultiLocation(self):
+        """A dialog to search for the multi export directory.
+        """
         fileFilter = 'All Files(*)'
         lastDirectory = self.outputDir_txt.text()
         startingDirectory = lastDirectory if lastDirectory != '' else self.exportDir
@@ -348,6 +389,8 @@ class AlembicExportUI(QWidget):
     
     
     def run(self):
+        """Runs tool based on which box user selected.
+        """
         if self.combined_chk.isChecked():
             self.exportSingle()
         else: 
@@ -357,6 +400,9 @@ class AlembicExportUI(QWidget):
             
     
     def exportSingle(self):
+        """Runs the single export.
+        Returns the output filepath.
+        """
         filepath = self.combinedFileOutput_txt.text()
         
         if cmds.ls(sl=1):
@@ -370,6 +416,9 @@ class AlembicExportUI(QWidget):
     
     
     def exportMulti(self):
+        """Runs the multi export.
+        Returns the output filepaths.
+        """
         exportDict = {}
         for i in range(len(self.exportSelectionSets)):
             runExport_chk = self.exportOptionsDict[i][f'enable_{i}']
@@ -396,6 +445,8 @@ class AlembicExportUI(QWidget):
         
     
     def successDialog(self):
+        """Dialog after process is finished.
+        """
         confirm_msg = QMessageBox()
         confirm_msg.setWindowTitle('Export Complete')
         
@@ -419,6 +470,8 @@ class AlembicExportUI(QWidget):
             
             
     def openFileLocation(self, directory):
+        """Opens the directory in the file explorer.
+        """
         formattedDirectory = directory.replace('/','\\') 
         Popen(f'explorer /select,"{formattedDirectory}"')
             
