@@ -20,7 +20,7 @@ class MultiExport():
         
     
     def setFramerange(self, min = None, max = None):
-        """Sets the framerange.
+        """Sets and returns the framerange.
         """
         if min or max is None:
             min = cmds.playbackOptions(q=1, min=1)

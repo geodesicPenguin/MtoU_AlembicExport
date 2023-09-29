@@ -18,12 +18,17 @@ try:
     from PySide2.QtCore import *
     from PySide2.QtGui import *
 except:
-    if moduleDir not in sys.path:
-        pysidePath = os.path.join(moduleDir, 'PySide2')
-        sys.path.append(pysidePath)
-        from PySide2.QtWidgets import *
-        from PySide2.QtCore import *
-        from PySide2.QtGui import *
+    import site
+    from subprocess import call
+    
+    unrealSitePackages = site.getsitepackages()[0]
+    
+    print('Installing PySide2 at:', unrealSitePackages, end='\n')
+    call(['pip','install','PySide2', '--target',unrealSitePackages])
+
+    from PySide2.QtWidgets import *
+    from PySide2.QtCore import *
+    from PySide2.QtGui import *
         
 
 
