@@ -8,6 +8,7 @@
 import os
 from maya import cmds, mel
 import constants
+import extraAlembicData
 
 exportVars = constants.getConstants()
 EXPORT_SET_NAME = exportVars['exportSetName']
@@ -102,8 +103,8 @@ class MultiExport():
         Runs the export as a mel command.
         """
         jobs = []
-        for set in self.exportDict: #it wonr actually be self.exportDict bc we need to dup the objs
-            filepath = self.exportDict[set]['filepath'] #wont actually be this bc need to append dir
+        for set in self.exportDict: 
+            filepath = self.exportDict[set]['filepath'] 
             objects = [f'-root {obj}' for obj in self.exportDict[set]['exportObjects']]
             root = ' '.join(objects)
             job = f'{root} -framerange {self.framerange} {DEFAULT_ABC_ARGS} -file {filepath}'
@@ -113,6 +114,14 @@ class MultiExport():
         melString.extend(f'-j "{job}"' for job in jobs)
         exportCommand = ' '.join(melString)
         mel.eval(exportCommand)
+        
+        
+    def addFrameData(self):
+        """Adds the start frame data to the alembic file for Unreal to read when importing.
+        """
+        for set in self.exportDict: 
+            file = self.exportDict[set]['filepath'] 
+            extraAlembicData.writeStartFrame(file)
 
     
     @classmethod
@@ -129,6 +138,7 @@ class MultiExport():
         exporter.duplicateObjects()
         exporter.exportFiles()
         exporter.deleteDuplicateObjects()
+        exporter.addFrameData()
         print(end='Export Completed')
         
         return exporter
@@ -154,5 +164,6 @@ class MultiExport():
         exporter.duplicateObjects()
         exporter.exportFiles()
         exporter.deleteDuplicateObjects()
+        exporter.addFrameData()
         print(end='Export Completed')
         

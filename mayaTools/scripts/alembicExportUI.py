@@ -51,10 +51,7 @@ class AlembicExportUI(QWidget):
         windowSizeAndPosition = QRect(50, 50, 500, 200)
         windowSizeAndPosition.moveCenter(mayaMainWindow.geometry().center())
         self.setGeometry(windowSizeAndPosition)
-        
-        
-        # offset the show() function to the user. That way we can make a classmethod that opens preexisting versions of the window.
-        #self.showWindow()
+         
         
         
     def mainUI(self):
@@ -283,10 +280,11 @@ class AlembicExportUI(QWidget):
         
         self.selectionOnly_btn = QPushButton('Selection Only')
         confirm_lyt.addWidget(self.selectionOnly_btn)
+        self.selectionOnly_btn.clicked.connect(lambda: self.run(True))
+        
         
         ok_btn = QPushButton('OK')
         confirm_lyt.addWidget(ok_btn)
-        
         ok_btn.clicked.connect(self.run)
         
         return confirm_wgt
@@ -387,24 +385,25 @@ class AlembicExportUI(QWidget):
         self.outputDir_txt.setText(selection)
     
     
-    def run(self):
+    def run(self, selection = False):
         """Runs tool based on which box user selected.
+        if selection argument set to True and single export is active, exports selection only.
         """
         if self.combined_chk.isChecked():
-            self.exportSingle()
+            self.exportSingle(selection)
         else: 
             self.exportMulti()
             
         self.successDialog()
             
     
-    def exportSingle(self):
+    def exportSingle(self, selection):
         """Runs the single export.
         Returns the output filepath.
         """
         filepath = self.combinedFileOutput_txt.text()
         
-        if cmds.ls(sl=1):
+        if selection:
             alembicSingleExport.SingleExport.exportSelection(filepath)
         else:
             alembicSingleExport.SingleExport.exportSelectionSets(filepath)

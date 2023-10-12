@@ -9,13 +9,13 @@ class AlembicImportTask():
             
     
     
-    def setTaskQueue(self, files, importFolder=None, importType = ue.AlembicImportType.SKELETAL, scale = [1,1,1], rotate = [-90,0,0]):
+    def setTaskQueue(self, files, importFolder=None, importType = ue.AlembicImportType.GEOMETRY_CACHE, scale = [1,1,1], rotate = [-90,0,0]):
         """Adds to the queue for all the task objects needed for each file being imported.
 
         Args:
             files : The filepaths for the desired imported files
             importFolder : The UE folder to import the files to.
-            importType : Defaults to ue.AlembicImportType.SKELETAL, future versions will have geometry cache and static mesh.
+            importType : Defaults to ue.AlembicImportType.GEOMETRY_CACHE
             scale : The scale of the imported objects.
             rotate : The rotation of the imported objects.
 
@@ -43,7 +43,7 @@ class AlembicImportTask():
             }
             
             task.set_editor_properties(properties)
-            task.options = self.setOptions(importType, scale, rotate)
+            task.options = self.setOptions(importType, scale, rotate, file)
         
             self.queuedTasks[assetName] = task
         
@@ -73,10 +73,9 @@ class AlembicImportTask():
         return formattedAssetPath
     
     
-    def setOptions(self, importType, scale, rotate):
+    def setOptions(self, importType, scale, rotate, file):
         """The options for the import tasks. 
-        This is a convenience function. 
-        All tasks added per class instance will recieve these import options.
+        All tasks recieve the same options, except for their start frame.
         
         Returns:
             options : The import settings object.
@@ -84,8 +83,12 @@ class AlembicImportTask():
         options = ue.AbcImportSettings()
         
         options.set_editor_property('import_type', importType)
+        if importType == ue.AlembicImportType.GEOMETRY_CACHE:
+            options.geometry_cache_settings = self.setAbcGeometryCacheSettings()
+            
         options.conversion_settings = self.setConversionSettings(scale, rotate)
         options.material_settings = self.setMaterialSettings()
+        options.sampling_settings = self.setSamplingSettings(file)
         
         return options
         
@@ -124,7 +127,7 @@ class AlembicImportTask():
         return materialSettings
     
     
-    def setConversionSettings(self, scale = [1,1,1], rotate = [-90,0,0]): 
+    def setConversionSettings(self, scale = [1,1,1], rotate = [90,0,0]): 
         """The settings for the transforms.
         
         Args:
@@ -149,6 +152,68 @@ class AlembicImportTask():
         return conversionSettings
     
     
+    def setAbcGeometryCacheSettings(self):
+        """The settings used when importing the asset as a gemoetry cache.
+
+        Returns:
+            gemoetryCacheSettings: The settings object for the geometry cache.
+        """
+        geometryCacheSettings = ue.AbcGeometryCacheSettings()
+        
+        properties = {
+            'flatten_tracks' : True,
+        }
+        
+        geometryCacheSettings.set_editor_properties(properties)
+        
+        return geometryCacheSettings
+    
+    
+    def setSamplingSettings(self, file):
+        """The settings for setting up the duration and step of the animation.
+        
+        Args:
+            file : The file to read data from.
+
+        Returns:
+            samplingSettings: The settings object for the frame sampling.
+        """
+        samplingSettings = ue.AbcSamplingSettings()
+        
+        startFrame = self._getStartFrameFromFile(file)
+        
+        properties = {
+            'frame_start' : startFrame
+        }
+        
+        samplingSettings.set_editor_properties(properties)
+        
+        return samplingSettings
+    
+    
+    @staticmethod
+    def _getStartFrameFromFile(file):
+        """Reads the alembic file for the start frame.
+        
+        Args:
+            file : The file to read data from.
+
+        Returns:
+            startFrameNumber: The frame the animation will start on. If no frame is found, due to the alembic file not containing the data exported thru Maya, defaults to 0.
+        """
+        with open(file, 'rb') as f:
+            frameNumberLine = str(f.readlines()[-1])
+            
+            if 'frame_start' not in frameNumberLine:
+                ue.log(f'{file} does not contain animation start frame data. Alembic file was not created with the Maya exporter intended for this tool. Defaulting start frame to 0.')
+                return 0
+            
+            frameNumberLine = frameNumberLine.replace("'","").split("=")[-1]
+            startFrameNumber = float(frameNumberLine)
+        
+        return startFrameNumber
+    
+    
     def runTasks(self):
         """Runs the tasks found within the task queue.
         """
@@ -160,7 +225,7 @@ class AlembicImportTask():
         
         
     @classmethod
-    def runImports(cls, files, importFolder=None, importType = ue.AlembicImportType.SKELETAL, scale = [1,1,1], rotate = [-90,0,0]):
+    def runImports(cls, files, importFolder=None, importType = ue.AlembicImportType.GEOMETRY_CACHE, scale = [1,1,1], rotate = [-90,0,0]):
         """Convenience function to set queue and import files in one function.
 
         Args:
@@ -174,7 +239,7 @@ class AlembicImportTask():
             importer : The AlembicImportTask object.
         """
         importer = cls()
-        importer.setTaskQueue(files, importFolder)
+        importer.setTaskQueue(files, importFolder, importType, scale, rotate)
         importer.runTasks()
         
         return importer

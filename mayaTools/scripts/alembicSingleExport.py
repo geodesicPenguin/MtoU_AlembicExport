@@ -8,6 +8,7 @@
 import os
 from maya import cmds, mel
 import constants
+import extraAlembicData
 
 exportVars = constants.getConstants()
 EXPORT_SET_NAME = exportVars['exportSetName']
@@ -97,6 +98,12 @@ class SingleExport():
         cmds.delete(self.exportObjects)
         
         
+    def addFrameData(self):
+        """Adds the start frame data to the alembic file for Unreal to read when importing.
+        """
+        extraAlembicData.writeStartFrame(self.filepath)
+    
+        
     @classmethod
     def exportSelection(cls, filepath, startFrame = None, endFrame = None):
         """Exports all selected objects to given filepath.
@@ -108,6 +115,7 @@ class SingleExport():
         exporter.duplicateObjects()
         exporter.exportFile()
         exporter.deleteDuplicateObjects()
+        exporter.addFrameData()
         print(end='Export Completed')
         
         return exporter
@@ -123,6 +131,7 @@ class SingleExport():
         exporter.duplicateObjects()
         exporter.exportFile()
         exporter.deleteDuplicateObjects()
+        exporter.addFrameData()
         print(end='Export Completed')
         
         return exporter

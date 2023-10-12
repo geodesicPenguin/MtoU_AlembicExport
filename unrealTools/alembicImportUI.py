@@ -40,7 +40,7 @@ class AlembicImportUI(QWidget):
         
         self.setWindowFlags(Qt.Window)
         self.setWindowTitle('Alembic Importer')
-        self.setFixedSize(350, 800)
+        self.setGeometry(QRect(100,100, 350, 800))
         self.setAcceptDrops(True) 
     
         self.uiWindow()
@@ -83,6 +83,16 @@ class AlembicImportUI(QWidget):
         self.assetLocationText.setToolTip('Defaults to the currently active folder in the content browser.')
         assetLocationLayout.addWidget(self.assetLocationText)
         
+        # import type
+        importTypeBox = QGroupBox('Import Type')
+        mainLayout.addWidget(importTypeBox)
+        importTypeLayout = QHBoxLayout(importTypeBox)
+        self.importTypeComboBox = QComboBox()
+        importTypeBox.setContentsMargins(15,15,15,15)
+        self.importTypeComboBox.setStyleSheet('QComboBox {background-color: #4a4a4a;}')
+        importTypeLayout.addWidget(self.importTypeComboBox)
+        self.importTypeComboBox.addItems(['Geometry Cache', 'Skeletal'])
+        
         
         # transforms
         transformsBox = QGroupBox('Transforms:')
@@ -117,24 +127,11 @@ class AlembicImportUI(QWidget):
         
         for i,wgt in enumerate([rotateLabel, self.rotateX, self.rotateY, self.rotateZ]):
             transformsLayout.addWidget(wgt, 1, i)
-            
-        
-        # import type (For static meshes and geometry caches in the future)
-        '''
-        importTypeBox = QGroupBox('Import Type')
-        mainLayout.addWidget(importTypeBox)
-        importTypeLayout = QHBoxLayout(importTypeBox)
-        importTypeComboBox = QComboBox()
-        importTypeBox.setContentsMargins(15,15,15,15)
-        importTypeComboBox.setStyleSheet('QComboBox {background-color: #4a4a4a;}')
-        importTypeLayout.addWidget(importTypeComboBox)
-        importTypeComboBox.addItems(['Static Mesh', 'Geometry Cache', 'Skeletal'])
-        '''
         
         
         # import abcs
         importButton = QPushButton('Import')
-        importButton.clicked.connect(self.runTaskQueue)
+        importButton.clicked.connect(self.runAndClose)
         mainLayout.addWidget(importButton)
         
     
@@ -148,6 +145,7 @@ class AlembicImportUI(QWidget):
         dragNdropLayout = QVBoxLayout(dragNdropBox)
         dragNdropLayout.setContentsMargins(20,20,20,20)
         self.fileListWidget = QListWidget()
+        self.fileListWidget.itemDoubleClicked.connect(self.removeFileListItem)
         self.fileListWidget.setFixedSize(250,300)
         self.fileListWidget.setStyleSheet('background-color: #202020;')
         dragNdropLayout.addWidget(self.fileListWidget)
@@ -155,10 +153,26 @@ class AlembicImportUI(QWidget):
         return dragNdropBox
     
     
+    def removeFileListItem(self):
+        """Removes the selected file from the list when double clicked.
+        """
+        selectedItem = self.fileListWidget.currentItem()
+        selectedItemIndex = self.fileListWidget.row(selectedItem)
+        self.fileListWidget.takeItem(selectedItemIndex)
+    
+    
     def saveSettings(self):
         """Saves the UI settings for next use.
         """
         settings = QSettings(*self.UI_SETTINGS)
+        
+        # window position settings
+        position = self.pos()
+        settings.setValue('windowPositionSettings', position)
+        
+        # import type settings
+        importType = self.importTypeComboBox.currentIndex()
+        settings.setValue('importTypeSettings', importType)
         
         # transform (conversion) settings
         scale = [s.value() for s in [self.scaleX, self.scaleY, self.scaleZ]]
@@ -173,7 +187,13 @@ class AlembicImportUI(QWidget):
         """
         settings = QSettings(*self.UI_SETTINGS)
         
-        scaleSettings, rotateSettings = settings.value('conversionSettings', ([1,1,1], [-90,0,0]))
+        windowPositionSettings = settings.value('windowPositionSettings', QPoint(300, 300))
+        self.move(windowPositionSettings)
+        
+        importTypeSettings = settings.value('importTypeSettings', 0)
+        self.importTypeComboBox.setCurrentIndex(importTypeSettings)
+        
+        scaleSettings, rotateSettings = settings.value('conversionSettings', ([1,1,1], [90,0,0]))
         
         self.scaleX.setValue(scaleSettings[0])
         self.scaleY.setValue(scaleSettings[1])
@@ -229,7 +249,6 @@ class AlembicImportUI(QWidget):
                 itemDataRole = Qt.UserRole+1
                 item.setData(itemDataRole, filePath)
                 self.fileListWidget.addItem(item)
-                #ue.log(item.data(itemDataRole))
             else:
                 ue.log('Skipping duplicate files.')
                 
@@ -310,6 +329,19 @@ class AlembicImportUI(QWidget):
         return listItems
     
     
+    def getImportType(self):
+        """Gets the user-specified import type.
+        """
+        importTypeIndex = self.importTypeComboBox.currentIndex()
+         
+        if importTypeIndex == 0:
+            importType = ue.AlembicImportType.GEOMETRY_CACHE
+        if importTypeIndex == 1:
+            importType = ue.AlembicImportType.SKELETAL
+            
+        return importType
+    
+    
     def getScale(self):
         """Gets the user-specified scale values.
         """
@@ -331,13 +363,21 @@ class AlembicImportUI(QWidget):
         """
         files = self.getFiles()
         importFolder = self.getImportLocation()
+        importType = self.getImportType()
         scale = self.getScale()
         rotate = self.getRotate()
         
         alembicImport.AlembicImportTask.runImports(files=files, 
-                                                   importFolder=importFolder, 
+                                                   importFolder=importFolder,
+                                                   importType=importType,
                                                    scale=scale, 
                                                    rotate=rotate)
+        
+    def runAndClose(self):
+        """Runs the task queue and closes the window.
+        """
+        self.runTaskQueue()
+        self.close()
 
 
 
