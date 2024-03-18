@@ -1,5 +1,8 @@
 #alembicImport.py
 
+# future dev possibilities
+# create materials on import checkbox
+
 import unreal as ue
 import os 
 
