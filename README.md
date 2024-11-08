@@ -26,7 +26,11 @@ MAYA:
 UNREAL:
 
 3. Enable Python in your Unreal project. Find out how to do that [here](https://www.youtube.com/watch?v=PMOvQ7mPv8k&list=PLBLmKCAjA25Br8cOVzUroqi_Nwipg-IdP&index=2).
-4. Copy the unrealTools folder into the project's Script folder. (Just go to where your .uproject file is saved, there should be a Script folder right next to it)
-5. In Unreal on the top bar, go to Tools > Execute Python Script. Browse for the alembicImportUI.py file. The UI will load and you can use Tools > Recent Python Scripts from now on to load the tool quicker.
-NOTE: When running the Unreal UI, if the PySide2 module is not found, the tool will install it AUTOMATICALLY on first run. There is an uninstall file available as well, if you want to remove PySide2 from your Unreal Python environment.
+4. Go to Edit > Project Settings and find the Python tab on the left under Plugins. (Or type Python in the searchbar @ the top)
+5. Next to "Additional Paths" hit the + and paste in the path to the unrealTools folder. That way, Unreal will know where to find the code for the import UI.
+
+6. In the Alembic_Import_Tool folder, open Alembic_Import_Tool.ueproject.
+7. In Unreal, navigate to the Alembic_Import_UI folder.
+8. Right click on the folder and hit "Migrate".
+9. Choose the project you'd like to add the tool to.
 
