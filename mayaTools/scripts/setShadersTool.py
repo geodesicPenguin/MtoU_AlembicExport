@@ -13,10 +13,16 @@ class SetShader:
         self.getGeometry()
         for self.geometry in self.selectedGeometry:
             self.getShape()
-            self.getAssignedShader()
+            
+            try:
+                self.getAssignedShader()
+            except RuntimeError as e:
+                print(e)
+                continue
+            
             self.applyShaders()
         cmds.undoInfo(closeChunk=1, chunkName='Shader_Set_Action')
-        print(end='Shaders set successfully')
+        print(end='Shaders set successfully!')
 
 
     def getGeometry(self):
@@ -38,26 +44,30 @@ class SetShader:
         shadingEngines = cmds.listConnections(history, type='shadingEngine')
         if len(shadingEngines) >1:
             print('Shading groups found:', shadingEngines, sep='\n')
-            cmds.error('Multiple shading engines attached to this object.', noContext=1)
+            cmds.error(f'Multiple shading engines already attached to {self.geometry} - skipping! (Nothing more needs to be done to this object)\n', noContext=1)
         shader = shadingEngines[0]
 
         self.shader = shader
 
-    def setLambertToMesh(self):
+    def setInitialShaderToMesh(self):
         """To set the shader to the faces, we need an alternate shader on the mesh.
-        The default lambert is assigned."""
-        cmds.sets(self.geometry, e=1, forceElement='initialShadingGroup')
+        The default standardSurface is assigned."""
+        cmds.select(self.geometry, r=1)
+        cmds.sets(e=1, forceElement='initialShadingGroup')
+        print(end='SET INITIAL!\n'+self.geometry)
 
 
     def setShaderToFaces(self):
         """Set a shader to the faces of a mesh object."""
         meshFaces = f'{self.geometry}.f[*]'
-        cmds.sets(meshFaces, e=1, forceElement=self.shader)
+        cmds.select(meshFaces,r=1)
+        cmds.sets(e=1, forceElement=self.shader)
+        print(end='SET MATERIAL!\n'+meshFaces)
 
     def applyShaders(self):
         """Applies mesh and object shaders. Must be in the afformentioned order.
         Must also do a viepowrt refresh."""
-        self.setLambertToMesh()
+        self.setInitialShaderToMesh()
         self.setShaderToFaces()
         cmds.ogs(reset=1)
 
