@@ -1,0 +1,19 @@
+Overview of what this tool does:
+abc import I/O
+
+the main sections of the tool:
+the maya side
+the ue side
+
+installation:
+installing the maya tool
+and the UE tool
+
+the Maya UI:
+Rename shading groups
+Set Shaders to Face Sets
+create export set
+export alembic cache
+    | this menu
+
+the ue ui:
