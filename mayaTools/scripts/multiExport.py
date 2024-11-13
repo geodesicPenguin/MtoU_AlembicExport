@@ -5,31 +5,25 @@
 #
 #combined
 
+
 import os
 from maya import cmds, mel
 import constants
-import extraAlembicData
+import alembicExport
 
 exportVars = constants.getConstants()
 EXPORT_SET_NAME = exportVars['exportSetName']
 DUPLICATE_OBJECT_NAME = exportVars['duplicateObjectName']
 DEFAULT_ABC_ARGS = exportVars['defaultArgList']
 
-class MultiExport():
+class MultiExport(alembicExport.BaseExport):
     def __init__(self):
+        super().__init__()
         self.exportDict = {}
         
-    
-    def setFramerange(self, min = None, max = None):
-        """Sets and returns the framerange.
-        """
-        if min or max is None:
-            min = cmds.playbackOptions(q=1, min=1)
-            max = cmds.playbackOptions(q=1, max=1)
-            self.framerange = f'{min} {max}'
-        else: self.framerange = f'{min} {max}'
-        
-        return self.framerange
+    def setFramerange(self, min=None, max=None):
+        """Sets and returns the framerange."""
+        return super().setFramerange(min, max)
     
     @staticmethod
     def findExportSets():
@@ -52,7 +46,6 @@ class MultiExport():
         
         return self.exportSets
     
-    
     def setExportDict(self):
         """Returns the export set dictionary.
         The export set dictionary defines data related to the set like so: 
@@ -66,19 +59,15 @@ class MultiExport():
         
         return self.exportDict
     
-    
     def setFilepath(self, exportSet, filepath):
         """Sets the filepath for the given export set.
         Returns the updated export set dictionary.
         """
-        path = os.path.normpath(filepath)
-        fixedPath = path.replace('\\','/')
+        fixedPath = super().setFilepath(filepath)
         self.exportDict[exportSet]['filepath'] = fixedPath
         
         return self.exportDict
-        
     
-            
     def duplicateObjects(self):
         """Duplicate objects are used for the export.
         This prevents export failure due to identical object names, as namespaces are also removed.
@@ -87,16 +76,16 @@ class MultiExport():
         """
         for set in self.exportSets: 
             cmds.select(set, replace=1)
-            duplicates = cmds.duplicate(returnRootsOnly=1, upstreamNodes=1, name=DUPLICATE_OBJECT_NAME)
-            self.exportDict[set]['exportObjects'] = duplicates
-            
+            self.objectsForExport = set
+            super().duplicateObjects()
+            self.exportDict[set]['exportObjects'] = self.exportObjects
             
     def deleteDuplicateObjects(self):
         """Deletes the duplicate objects.
         """
         for set in self.exportSets:
-            cmds.delete(self.exportDict[set]['exportObjects'])
-    
+            self.exportObjects = self.exportDict[set]['exportObjects']
+            super().deleteDuplicateObjects()
     
     def exportFiles(self):
         """Creates the string of exports set by the user.
@@ -115,14 +104,12 @@ class MultiExport():
         exportCommand = ' '.join(melString)
         mel.eval(exportCommand)
         
-        
     def addFrameData(self):
         """Adds the start frame data to the alembic file for Unreal to read when importing.
         """
         for set in self.exportDict: 
-            file = self.exportDict[set]['filepath'] 
-            extraAlembicData.writeStartFrame(file)
-
+            self.filepath = self.exportDict[set]['filepath'] 
+            super().addFrameData()
     
     @classmethod
     def exportDefaultSelectionSets(cls, filepath, startFrame = None, endFrame = None):
@@ -166,4 +153,3 @@ class MultiExport():
         exporter.deleteDuplicateObjects()
         exporter.addFrameData()
         print(end='Export Completed')
-        

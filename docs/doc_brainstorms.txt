@@ -17,3 +17,21 @@ export alembic cache
     | this menu
 
 the ue ui:
+
+
+
+for later:
+<br>
+
+# Export Camera(s) to FBX
+
+<br>
+
+If you're exporting your animated scene to an alembic cache for use in Unreal, chances are you'll also need the scene camera exported along with it. Although camera objects are compatible with alembic cache files, Unreal isn't built to import them with your cached scene.
+
+`Export Camera(s) to FBX` takes your selected cameras and exports them to your desired directory.
+
+## Functionality
+* Select the camera objects you want to export
+* Choose the save directory in the file browser dialog
+* A confirmation window will appear, allowing you to open the directory

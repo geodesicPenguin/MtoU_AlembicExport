@@ -8,11 +8,11 @@
 
 ### Why?
 * FBX animation must contain a skeleton, which at times can be less than ideal
-* Alembics work with geometry caches, meaning any deformers from your 3D software is compatible
+* Alembics work with geometry caches, meaning any deformers from your 3D software are compatible
 * This allows creative freedom to animate how you choose
 
 ### How Does it Work?
-* Unreal needs certain parameters to be set in order for you alembics to import properly
+* Unreal needs certain parameters to be set in order for your alembics to import properly
 * The Maya tool exports with these parameters, then the Unreal tool imports them accordingly
 
 <br>
@@ -25,12 +25,12 @@ The easiest route to getting your animated scene from Maya into your Unreal sequ
 4. Export your scene file from Maya
 5. Import your scene file to Unreal
 
-Performing these steps ensures a speedy output of your scene, the correct shaders attached in Unreal with predictable naming, and some other third thing.  
+Performing these steps ensures a speedy output of your scene from Maya and easy batch import of your alembic files to Unreal at the desired location with connected shaders and organized material naming.
 
 <br>
 
 # Installation:
-Download the ZIP file from the `<> code` button on the top right of the github page.
+Download the ZIP file from the `<> code` button on the top right of the GitHub page.
 There are two separate GUIs used. One for Maya and one for Unreal.
 
 <div style="background-color: #2a2e28; padding: 10px; border-radius: 15px;">
@@ -41,8 +41,11 @@ There are two separate GUIs used. One for Maya and one for Unreal.
 3. You should see a confirmation dialog and the menu on the top bar 
 4. The tools are ready for use (No restart necessary)
 
-![Installing the Maya tool](maya_install.gif)
---
+<details>
+  <summary>Installing the Maya tool:</summary>
+  <img src="maya_install.gif" alt="Installing the Maya tool">
+</details>
+<br>
 </div>
 
 <br>
@@ -55,16 +58,19 @@ There are two separate GUIs used. One for Maya and one for Unreal.
 
 2. After unzipping the downloaded code, navigate to the `unrealTools` folder
 
-3. Move the `unrealTools` folder to `<Unreal_Project>/Scripts`- IE: MyProject/Scripts (If you don't have a Scripts folder, make one)
+3. Move the `unrealTools` folder to `<Unreal_Project>/Scripts` (If you don't have a Scripts folder, make one)
 
 4. In Unreal, go to Edit > Project Settings and type "python" in the top search bar
 
-5. Locate `Additional Paths` in the menu and click the `+` icon next to it. Copy the path to the `unrealTools` folder and paste in the `Additional Paths` text box - IE: MyProject/Scripts/unrealTools
+5. Locate `Additional Paths` in the menu and click the `+` icon next to it. Copy the path to the `unrealTools` folder and paste it in the `Additional Paths` text box. <br>
+(IE: C:/Users/Artist/MyProject/Scripts/unrealTools)
 
-NOTE: Moving the folder to your project's Scripts folder is only a suggestion. If you like, you can move the unrealTools folder wherever you prefer. Just as long as you make sure the Additional Paths location is set there. 
+<br>
+
+NOTE: Moving the folder to your project's Scripts folder is only a suggestion. If you like, you can move the unrealTools folder wherever you prefer. Just make sure the Additional Paths location is set there. 
 
 ### Add the Blueprint
-To add the Editor Utility Widget menu to you project, you must migrate it from a separate project.
+To add the Editor Utility Widget menu to your project, you must migrate it from a separate project.
 
 1. Navigate to `unrealTools/Alembic_Import_Tool`
 
@@ -73,11 +79,11 @@ To add the Editor Utility Widget menu to you project, you must migrate it from a
 3. In the project, select the `Alembic_Import_Tool` folder in the 
 content browser
 
-4. Right click on it and click `Migrate`, then click OK
+4. Right-click on it and click `Migrate`, then click OK
 
 5. Navigate to the `Content` folder of the project where you want the tool, select it and click `Select Folder`
 
-6. Go back to the project you migrated to and locate the blueprint. Right click on it and click `Run Editor Utility Widget`
+6. Go back to the project you migrated to and locate the blueprint. Right-click on it and click `Run Editor Utility Widget`
 
 </div>
 
@@ -91,21 +97,21 @@ content browser
 # Maya Tools
 ![The menu dropdown](alembicExportTools_Menu.png)
 
-In Maya, the `abcAction` menu dropdown holds all the tools needed easy set-up and exporting of your animated scenes. Below is a list of all the functions in the menu.
+In Maya, the `abcAction` menu dropdown holds all the tools needed for easy set-up and exporting of your animated scenes. Below is a list of all the functions in the menu.
 
 <br>
 
 # Apply Shader to Face Sets 
 
-For Unreal to recognize the shaders connected to an importing alembic file, the shader must be connected via the face components. In Maya, that means your node network has to look like this ![Face set connected shader]()
+For Unreal to recognize the shaders connected to an importing alembic file, the shader must be connected via the face components. In Maya, that means your node network has to look like this: ![Face set connected shader](faceSetShading.png)
 
-Rather than this ![object connected shader]()
+Rather than this: ![object connected shader](objectSetShading.png)
 
 The difference is the way the shading group for the material you intend to use is connected to the mesh. Unreal does **not** recognize the shader if you simply assign it to the mesh object in Maya.
 
-If any of the mesh objects you are exporting have their shaders assigned to the object, you will need to make sure to apply the shaders directly on the faces to mimic the necessary node connections. In this scenario, you must use the `Apply Shader to Face Sets` function to have the shaders hookup in Unreal.
+If any of the mesh objects you are exporting have their shaders assigned to the object, you will need to make sure to apply the shaders directly on the faces to mimic the necessary node connections. In this scenario, you must use the `Apply Shader to Face Sets` function to have the shaders hook up in Unreal.
 
-However, if the mesh objects you're exporting **already** contain multiple shaders connected to **one mesh object** then you do not have to do anything! Objects like this already contain the desired note connections to export with the shaders correctly.
+However, if the mesh objects you're exporting **already** contain multiple shaders connected to **one mesh object** then you do not have to do anything! Objects like this already contain the desired node connections to export with the shaders correctly.
 
 
 ## Functionality
@@ -123,12 +129,12 @@ However, if the mesh objects you're exporting **already** contain multiple shade
 
 # Apply Material Name to Shaders
 
-When importing FBX files into Unreal, the name of the materials on the imported objects are what Unreal uses to hook up to the matching Unreal materials.
+When importing FBX files into Unreal, the name of the materials on the imported objects is what Unreal uses to hook up to the matching Unreal materials.
 
 For some reason, alembic caches work differently. Unreal will search for the name of the shading groups. If artists name their materials, but leave their shading groups with default names such as "standardSurface1_SG", that creates a two-fold problem. Unreal won't automatically hook up your materials to their Unreal counterparts, and it will be a guessing game when adding materials manually in Unreal, since each object will be named "standardSurface1_SG", "Blinn5_SG" and so on. 
 
-![Maya default SG name]()
-![Unreal default shader names]()
+![Maya default SG name](genericShader.png)
+![Unreal default shader names](namedShader.png)
 
 ## Functionality
 * Select the objects or materials you want to modify with shading groups you want to rename.
@@ -141,9 +147,9 @@ For some reason, alembic caches work differently. Unreal will search for the nam
 
 # Create Export Selection Set
 
-When it comes time to export your animation to Unreal, the process of selecting each and every mesh object to be exported can get old very, very quickly. Especially when the scene contains multiple charcaters, props and environments.
+When it comes time to export your animation to Unreal, the process of selecting each and every mesh object to be exported can get old very, very quickly. Especially when the scene contains multiple characters, props, and environments.
 
-`Create Export Selection Set` creates a selecion set of the selected objects. It is meant to be used in each assets original file, so that the selection set will appear with the referenced asset in your scene. 
+`Create Export Selection Set` creates a selection set of the selected objects. It is meant to be used in each asset's original file so that the selection set will appear with the referenced asset in your scene. 
 
 ## Functionality
 * Select the mesh objects to add to the set
@@ -154,7 +160,7 @@ When it comes time to export your animation to Unreal, the process of selecting 
 ### NOTE: 
 * The exporter uses this naming convention when exporting a scene. If the selection set does not include the appended string "_abcExport" it will not export. 
 
-* You can change the name of this string in `Export Selection Sets` menu.
+* You can change the name of this string in the `Export Selection Sets` menu.
 
 * The selection sets are located at the bottom of the outliner.
 
@@ -181,23 +187,23 @@ The only work the user must do is provide different file output options within t
 
 **Two Export Options**
 
-Artists have the liberty of exporting all export sets found in the scene into one alembic file. However, some scenarios make this option unfavorable. With the entire scene as one alembic file, Unreal will treat the alembic as one object. This means no fine-tuning for things such as character placement, animation timing in the sequencer and more. If all you're doing is placing the scene in Unreal and rendering, this is no problem. But if you want the extra freedom, the `Separate Files` option is the way to go.
+Artists have the liberty of exporting all export sets found in the scene into one alembic file. However, some scenarios make this option unfavorable. With the entire scene as one alembic file, Unreal will treat the alembic as one object. This means no fine-tuning for things such as character placement, animation timing in the sequencer, and more. If all you're doing is placing the scene in Unreal and rendering, this is no problem. But if you want the extra freedom, the `Separate Files` option is the way to go.
 
 ## Functionality
 * Export one single alembic cache for the entire scene
 
-* Export individual alembic caches for each asset defined by their resepctive export set
+* Export individual alembic caches for each asset defined by their respective export set
 
 ### Export Menu Window
-![The export UI](exportAlembic_oneFile_UI.png) # do I need this?
+![The export UI](exportAlembic_General.jpg)
 
-### Settings Dropdown
+### Settings
 
-![Export Menu Settings Dropdown]()
+![Export Menu Settings Dropdown](Settings_Menu.jpg)
 
 ## New Export Set Keyword
 * Change what keyword the exporter will use to identify what selection sets to export
-* The default is `EXPORT_SET`, so the exporter will be looking for that string
+* The default is `abcExport`, so the exporter will be looking for that string
 * The exporter will remember your change for future use.
 
 ## Reset Export Set Keyword
@@ -235,25 +241,12 @@ The `Selection Only` button is only enabled for `One File` exports. It will expo
 
 The `OK` button will export the alembic file(s) based on the export sets.
 
-![Succesful export]()
+![Successful export](successfulExport.jpg)
 
 Once exporting is complete, a confirmation dialog appears. The user can either close the window or open the directory where the files were saved.
 
-<br>
 
-# Export Camera(s) to FBX
-
-<br>
-
-If you're exporting your animated scene to an alembic cache for use in Unreal, chances are you'll also need the scene camera exported along with it. Although camerea objects are compatible alembic cache files, Unreal isn't built to import them with your cached scene.
-
-`Export Camera(s) to FBX` takes your selected cameras and exports them to your desired directory.
-
-## Functionality
-* Select the camera objects you want to export
-* Choose the save directory in the file browser dialog
-* A confirmation window will appear, allowing you to open the directory
-
+<!-- Remember to update this with the camera exporter -->
 
 <br>
 
@@ -273,7 +266,7 @@ If none of the UI elements function and the scale values under the Transforms se
 # Browse Files
 * Opens a browser to search for alembic files
 * Multiple files are selectable for batch import
-* Selected files will populate a the `Selected Alembic Files` list
+* Selected files will populate the `Selected Alembic Files` list
 
 <br>
 

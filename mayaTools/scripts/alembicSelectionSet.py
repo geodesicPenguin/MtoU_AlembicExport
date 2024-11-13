@@ -23,6 +23,20 @@ def userSelection():
 
 def createSelectionSet():
     selectionSet = EXPORT_SET_NAME
+    result = cmds.promptDialog(
+        title='Name Export Set',
+        message='Enter Export Set Name:           ',
+        button=['OK'],
+        defaultButton='OK',
+        cancelButton='Cancel',
+        dismissString='Cancel'
+    )
+
+    if result == 'OK':
+        text = cmds.promptDialog(query=True, text=True)
+        selectionSet = f"{text}_{EXPORT_SET_NAME}"
+    else:
+        return
     allSets = cmds.ls(sets=1)
 
     if selectionSet in allSets:

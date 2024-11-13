@@ -8,32 +8,23 @@
 import os
 from maya import cmds, mel
 import constants
-import extraAlembicData
+import alembicExport
 
 exportVars = constants.getConstants()
 EXPORT_SET_NAME = exportVars['exportSetName']
 DUPLICATE_OBJECT_NAME = exportVars['duplicateObjectName']
 DEFAULT_ABC_ARGS = exportVars['defaultArgList']
 
-class SingleExport():
+class SingleExport(alembicExport.BaseExport):
     def __init__(self):
-        pass
+        super().__init__()
     
-    def setFramerange(self, min = None, max = None):
-        """Sets and returns the framerange.
-        """
-        if min or max is None:
-            min = cmds.playbackOptions(q=1, min=1)
-            max = cmds.playbackOptions(q=1, max=1)
-            self.framerange = f'{min} {max}'
-        else: self.framerange = f'{min} {max}'
-        
-        return self.framerange        
-    
+    def setFramerange(self, min=None, max=None):
+        """Sets and returns the framerange."""
+        return super().setFramerange(min, max)
     
     def getExportSets(self):
-        """Returns the found export sets. Errors if none found.
-        """
+        """Returns the found export sets. Errors if none found."""
         sets = cmds.ls(f'::*{EXPORT_SET_NAME}*', sets=1)
         
         if not sets:
@@ -43,10 +34,8 @@ class SingleExport():
         
         return self.objectsForExport
     
-    
     def getSelected(self):
-        """Returns the selection.
-        """
+        """Returns the selection."""
         selection = cmds.ls(sl=1)
         if not selection:
             cmds.error('Nothing is selected for export.', noContext=1)
@@ -57,27 +46,17 @@ class SingleExport():
         
         return self.objectsForExport
     
-    
     def setFilepath(self, filepath):
-        """Returns the set filepath.
-        """
-        path = os.path.normpath(filepath)
-        fixedPath = path.replace('\\','/')
-        self.filepath = fixedPath
-        
-        return self.filepath
-
-            
+        """Returns the set filepath."""
+        return super().setFilepath(filepath)
+    
     def duplicateObjects(self):
         """Duplicate objects are used for the export.
         This prevents export failure due to identical object names, as namespaces are also removed.
         When importing to Unreal, the objects will appear named as the DUPLICATE_OBJECT_NAME constant followed by a number.
         This is a negligible edit and does not affect anything other than the name.
         """
-        cmds.select(self.objectsForExport, replace=1)
-        duplicates = cmds.duplicate(returnRootsOnly=1, upstreamNodes=1, name=DUPLICATE_OBJECT_NAME)
-        self.exportObjects = duplicates
-    
+        super().duplicateObjects()
     
     def exportFile(self): 
         """Creates the export string.
@@ -91,23 +70,17 @@ class SingleExport():
         exportCommand = f'AbcExport -j "{job}"'
         mel.eval(exportCommand)
         
-        
     def deleteDuplicateObjects(self):
-        """Deletes the duplicate objects.
-        """
-        cmds.delete(self.exportObjects)
-        
+        """Deletes the duplicate objects."""
+        super().deleteDuplicateObjects()
         
     def addFrameData(self):
-        """Adds the start frame data to the alembic file for Unreal to read when importing.
-        """
-        extraAlembicData.writeStartFrame(self.filepath)
+        """Adds the start frame data to the alembic file for Unreal to read when importing."""
+        super().addFrameData()
     
-        
     @classmethod
-    def exportSelection(cls, filepath, startFrame = None, endFrame = None):
-        """Exports all selected objects to given filepath.
-        """
+    def exportSelection(cls, filepath, startFrame=None, endFrame=None):
+        """Exports all selected objects to given filepath."""
         exporter = cls()
         exporter.setFramerange(startFrame, endFrame)
         exporter.getSelected()
@@ -121,9 +94,8 @@ class SingleExport():
         return exporter
         
     @classmethod
-    def exportSelectionSets(cls, filepath, startFrame = None, endFrame = None):
-        """Exports all objects within the selection sets fo the given filepath.
-        """
+    def exportSelectionSets(cls, filepath, startFrame=None, endFrame=None):
+        """Exports all objects within the selection sets to the given filepath."""
         exporter = cls()
         exporter.setFramerange(startFrame, endFrame)
         exporter.getExportSets()
@@ -135,4 +107,4 @@ class SingleExport():
         print(end='Export Completed')
         
         return exporter
-        
+

@@ -17,8 +17,8 @@ from maya import cmds
 from maya import OpenMayaUI as omui
 
 
-import alembicSingleExport
-import alembicMultiExport
+import singleExport
+import multiExport
 import constants
 
 
@@ -64,11 +64,11 @@ class AlembicExportUI(QWidget):
         main_wgt = QGroupBox()
         master_lyt.addWidget(main_wgt)
         
-        main_lyt = QVBoxLayout(main_wgt)
+        self.main_lyt = QVBoxLayout(main_wgt)
         
-        main_lyt.addWidget(self.fileOutputOptionsUI())
-        main_lyt.addWidget(self.exportOptionsUI())
-        main_lyt.addWidget(self.confirmOptionsUI())
+        self.main_lyt.addWidget(self.fileOutputOptionsUI())
+        self.main_lyt.addWidget(self.exportOptionsUI())
+        self.main_lyt.addWidget(self.confirmOptionsUI())
         
     
     def saveSettings(self):
@@ -230,7 +230,7 @@ class AlembicExportUI(QWidget):
                 exportRow_lyt.addWidget(exportSet_txt)
                 exportRow_lyt.addWidget(output_txt)
         else:
-            noExportSets_lbl = QLabel(f'No export sets were found with the keyword "{alembicMultiExport.EXPORT_SET_NAME}".')
+            noExportSets_lbl = QLabel(f'No export sets were found with the keyword "{multiExport.EXPORT_SET_NAME}".')
             options_lyt.addWidget(noExportSets_lbl) 
             
         outputDir_wgt = QFrame()
@@ -304,9 +304,15 @@ class AlembicExportUI(QWidget):
         This function edits the json file and updates the constant variables within the respective export modules.
         """
         constants.setConstant('exportSetName', newValue) # Changes variable in constant.json for future use
-        alembicMultiExport.EXPORT_SET_NAME = newValue # Updates the current session to look for this new name in the Multi exporter
-        alembicSingleExport.EXPORT_SET_NAME = newValue # Updates the current session to look for this new name Single exporter
-        self.close() # closes window, since window will need a refresh to populate with new found sets
+        multiExport.EXPORT_SET_NAME = newValue # Updates the current session to look for this new name in the Multi exporter
+        singleExport.EXPORT_SET_NAME = newValue # Updates the current session to look for this new name Single exporter
+        self.exportOptions_wgt.deleteLater() # Deletes the widget made in exportOptionsUI
+        self.main_lyt.insertWidget(1, self.exportOptionsUI()) # Re-adds the widget to the layout with the updates
+        if self.combined_chk.isChecked():
+            self.exportOptions_wgt.setDisabled(True)
+        else:
+            self.exportOptions_wgt.setDisabled(False)
+
     
     
     def exportSetDialog(self):
@@ -319,7 +325,7 @@ class AlembicExportUI(QWidget):
                                                          'If blank, all sets are shown.\n\n'
                                                          'Export Set Name:',
                                                          QLineEdit.Normal,
-                                                         alembicMultiExport.EXPORT_SET_NAME)
+                                                         multiExport.EXPORT_SET_NAME)
         if confirm:
             self.editExportSetName(newValue=newExportSetName)
     
@@ -327,7 +333,7 @@ class AlembicExportUI(QWidget):
     def findExportSets(self):
         """Returns the unique export sets for the multi export.
         """
-        self.exportSelectionSets = alembicMultiExport.MultiExport.findExportSets()
+        self.exportSelectionSets = multiExport.MultiExport.findExportSets()
         
         return self.exportSelectionSets
     
@@ -404,9 +410,9 @@ class AlembicExportUI(QWidget):
         filepath = self.combinedFileOutput_txt.text()
         
         if selection:
-            alembicSingleExport.SingleExport.exportSelection(filepath)
+            singleExport.SingleExport.exportSelection(filepath)
         else:
-            alembicSingleExport.SingleExport.exportSelectionSets(filepath)
+            singleExport.SingleExport.exportSelectionSets(filepath)
             
         self.filepaths = [filepath]
         
@@ -434,7 +440,7 @@ class AlembicExportUI(QWidget):
             
             exportDict[exportSetName] = outputPath
             
-        alembicMultiExport.MultiExport.exportSelectionSets(exportSetsOutputDict=exportDict)
+        multiExport.MultiExport.exportSelectionSets(exportSetsOutputDict=exportDict)
         
         filepaths = [filepath for filepath in exportDict.values()]
         self.filepaths = filepaths
