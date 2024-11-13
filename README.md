@@ -1,4 +1,4 @@
-# abcAction - A Maya to Unreal Alembic Export Tools
+# abcAction - A Maya to Unreal Alembic Export Tool
 
 
 I've worked on many cinematic projects in Unreal Engine. Most notably this one [here](https://www.youtube.com/watch?v=GNJtPFXUnm4).
