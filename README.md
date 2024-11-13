@@ -31,7 +31,7 @@ There are two separate GUIs used. One for Maya and one for Unreal.
 
 <details>
   <summary>Installing the Maya tool:</summary>
-  <img src="media/maya_install.gif" alt="Installing the Maya tool">
+  <img src="docs/media/maya_install.gif" alt="Installing the Maya tool">
 </details>
 <br>
 </div>
