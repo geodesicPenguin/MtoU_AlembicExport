@@ -18,10 +18,10 @@ fileDir = os.path.dirname(os.path.realpath(__file__))
 CONSTANTS_FILE = os.path.join(fileDir, 'constants.json')
 CONSTANTS = ['exportSetName', 'duplicateObjectName', 'defaultArgList']
 
-# Do not edit these.
-DEFAULT_VALUES = ['EXPORT_SET', 
+# Do not edit these. If you want different values, edit the constants.json file.
+DEFAULT_VALUES = ['abcExport', 
                   'PLACEHOLDER', 
-                  '-stripNamespaces -uvWrite -writeFaceSets -writeVisibility -autoSubd -writeUVSets -wholeFrameGeo -worldSpace -dataFormat ogawa']
+                  '-stripNamespaces -uvWrite -writeFaceSets -writeVisibility -worldSpace -dataFormat ogawa']
         
 
 def defaultConstants():

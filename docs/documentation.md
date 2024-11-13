@@ -23,7 +23,7 @@ There are two separate GUIs used. One for Maya and one for Unreal.
 1. After unzipping the downloaded code, navigate to the `mayaTools` folder
 2. Select and drag the `DRAG-N-DROP-IN-MAYA.py` file into the Maya viewport
 3. You should see a confirmation dialog and the menu on the top bar 
-4. **Restart Maya**
+4. The tools are ready for use (No restart necessary)
 
 ![Installing the Maya tool](maya_install.gif)
 --

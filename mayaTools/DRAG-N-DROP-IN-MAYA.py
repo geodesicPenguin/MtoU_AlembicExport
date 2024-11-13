@@ -12,14 +12,16 @@ It also copies the code to the scripts folder.
 VERSION = 1.0
 
 import os
+import sys
 from shutil import copytree, rmtree
 from maya import cmds
 
-from scripts.userSetup import createAlembicExportMenu
+from scripts.menuBar import createAlembicExportMenu
 
 def onMayaDroppedPythonFile(*args, **kwargs):
     try:
         modulesDir = getModulesPath()       # Gets the path to the modules folder
+        modulesPathExist()                   # Checks if the modules path exists, if not, it creates it
         toolsDir = checkToolsDir()           # Checks the directory for the tools in the scripts folder
         copyFiles(toolsDir)                 # Copies the directory where this install file comes from, to the new tools directory
         writeModFile(modulesDir, toolsDir)  # Writes the needed .mod file
@@ -37,6 +39,13 @@ def getModulesPath():
     userAppDir = cmds.internalVar(userAppDir=1)
     modulesDir = os.path.join(userAppDir, 'modules')
     return modulesDir
+
+
+def modulesPathExist():
+    """If the modules path doesn't exist, we create it."""
+    modulesDir = getModulesPath()
+    if not os.path.exists(modulesDir):
+        os.makedirs(modulesDir)
     
 
 def writeModFile(filepath, toolsDir):
@@ -69,12 +78,12 @@ def copyFiles(copyDir):
   
     
 def menu():
-    """Runs the exact same menu creation code found in the userSetup.py file.
-    May be a bit unorthodox, since userSetup isn't commonly imported and ran.
-    This allows for the menu to be avialable on install, rather than restarting the software.
-    """
+    """This allows for the menu to be available on install, rather than restarting the software."""
     createAlembicExportMenu()
-
+    scripts_path = os.path.join(os.path.dirname(__file__), 'scripts')
+    if scripts_path not in sys.path:
+        sys.path.append(scripts_path)
+    
     
     
 def endDialog(error=None):
@@ -86,6 +95,6 @@ def endDialog(error=None):
         cmds.confirmDialog(title='Install Complete',
                         message='''The alembic export tools have been installed.
 Look for the menu on the top bar.
-The program will need to be restarted to load the tools.''',
+No restart necessary.''',
                         button=['OK'])
 
