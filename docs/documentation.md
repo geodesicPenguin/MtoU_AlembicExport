@@ -43,7 +43,7 @@ There are two separate GUIs used. One for Maya and one for Unreal.
 
 <details>
   <summary>Installing the Maya tool:</summary>
-  <img src="maya_install.gif" alt="Installing the Maya tool">
+  <img src="media/maya_install.gif" alt="Installing the Maya tool">
 </details>
 <br>
 </div>
@@ -95,7 +95,7 @@ content browser
 
 # **Using abcAction**
 # Maya Tools
-![The menu dropdown](alembicExportTools_Menu.png)
+![The menu dropdown](media/alembicExportTools_Menu.png)
 
 In Maya, the `abcAction` menu dropdown holds all the tools needed for easy set-up and exporting of your animated scenes. Below is a list of all the functions in the menu.
 
@@ -103,9 +103,9 @@ In Maya, the `abcAction` menu dropdown holds all the tools needed for easy set-u
 
 # Apply Shader to Face Sets 
 
-For Unreal to recognize the shaders connected to an importing alembic file, the shader must be connected via the face components. In Maya, that means your node network has to look like this: ![Face set connected shader](faceSetShading.png)
+For Unreal to recognize the shaders connected to an importing alembic file, the shader must be connected via the face components. In Maya, that means your node network has to look like this: ![Face set connected shader](media/faceSetShading.png)
 
-Rather than this: ![object connected shader](objectSetShading.png)
+Rather than this: ![object connected shader](media/objectSetShading.png)
 
 The difference is the way the shading group for the material you intend to use is connected to the mesh. Unreal does **not** recognize the shader if you simply assign it to the mesh object in Maya.
 
@@ -133,8 +133,8 @@ When importing FBX files into Unreal, the name of the materials on the imported 
 
 For some reason, alembic caches work differently. Unreal will search for the name of the shading groups. If artists name their materials, but leave their shading groups with default names such as "standardSurface1_SG", that creates a two-fold problem. Unreal won't automatically hook up your materials to their Unreal counterparts, and it will be a guessing game when adding materials manually in Unreal, since each object will be named "standardSurface1_SG", "Blinn5_SG" and so on. 
 
-![Maya default SG name](genericShader.png)
-![Unreal default shader names](namedShader.png)
+![Maya default SG name](media/genericShader.png)
+![Unreal default shader names](media/namedShader.png)
 
 ## Functionality
 * Select the objects or materials you want to modify with shading groups you want to rename.
@@ -195,11 +195,11 @@ Artists have the liberty of exporting all export sets found in the scene into on
 * Export individual alembic caches for each asset defined by their respective export set
 
 ### Export Menu Window
-![The export UI](exportAlembic_General.jpg)
+![The export UI](media/exportAlembic_General.jpg)
 
 ### Settings
 
-![Export Menu Settings Dropdown](Settings_Menu.jpg)
+![Export Menu Settings Dropdown](media/Settings_Menu.jpg)
 
 ## New Export Set Keyword
 * Change what keyword the exporter will use to identify what selection sets to export
@@ -215,7 +215,7 @@ Artists have the liberty of exporting all export sets found in the scene into on
 
 ### One File Option
 
-![One File option selected](exportAlembic_oneFile_UI.png)
+![One File option selected](media/exportAlembic_oneFile_UI.png)
 
 <br>
 
@@ -226,7 +226,7 @@ Artists have the liberty of exporting all export sets found in the scene into on
 
 ### Separate Files Option ###
 
-![alt text](exportAlembic_sepFile_UI.png)
+![alt text](media/exportAlembic_sepFile_UI.png)
 
 When `Separate Files` is selected, the box menu below it is enabled. It lists all the export sets found in the scene. The user can select or deselect any export sets they wish to save out. If no export sets were found, there is a dialog telling the user it cannot find any sets with the export set naming convention.
 
@@ -241,7 +241,7 @@ The `Selection Only` button is only enabled for `One File` exports. It will expo
 
 The `OK` button will export the alembic file(s) based on the export sets.
 
-![Successful export](successfulExport.jpg)
+![Successful export](media/successfulExport.jpg)
 
 Once exporting is complete, a confirmation dialog appears. The user can either close the window or open the directory where the files were saved.
 
@@ -253,13 +253,13 @@ Once exporting is complete, a confirmation dialog appears. The user can either c
 <br>
 
 # Unreal Tools
-![The Unreal UI](abcImportUI_window.png)
+![The Unreal UI](media/abcImportUI_window.png)
 
 In Unreal, the `abcAction` window has various options for batch importing all your alembic files. If you have trouble seeing the window, dock it, or use `Ctrl+Shift+W` to adjust your UI settings. Below is a list of all the functions and what they do.
 
 <br>
 
-If none of the UI elements function and the scale values under the Transforms section read as 0, then you must add the directory path to the `Additional Paths` setting under Python in your project settings. More info on this is available under the Installation section.
+If none of the UI elements function and the scale values under the Transforms section read as 0, then you must add the directory path to the `Additional Paths` setting under Python in your project settings. More info on this is available under the [Installation](#installation) section.
 
 <br>
 
