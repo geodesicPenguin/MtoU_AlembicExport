@@ -69,6 +69,10 @@ There are two separate GUIs used. One for Maya and one for Unreal.
 
 NOTE: Moving the folder to your project's Scripts folder is only a suggestion. If you like, you can move the unrealTools folder wherever you prefer. Just make sure the Additional Paths location is set there. 
 
+If you're advanced, you can open your Unreal project through a terminal, making sure the `UE_PYTHONPATH` environment variable is set with the path of the unrealTools folder. This will allow you to use the unrealTools folder without having to add it to the Additional Paths.
+
+<br>
+
 ### Add the Blueprint
 To add the Editor Utility Widget menu to your project, you must migrate it from a separate project.
 
